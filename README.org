@@ -1,0 +1,5 @@
+* README for krimple-react demo
+  This is an Om.Next application inspired by Ken Rimple's [[https://github.com/krimple/libertyjs-react-talk-public][React
+  presentation for the LibertyJS]] group.
+
+  It is rough and unpolished, but has much of the same framework. 
