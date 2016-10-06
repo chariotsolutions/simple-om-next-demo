@@ -1,6 +1,6 @@
 (defproject krimple-react "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "Minimal Om.Next/React demo program"
+  :url "https://github.com/chariotsolutions/simple-om-next-demo"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -16,9 +16,7 @@
                  [cljsjs/react "15.3.1-0"]
                  [cljsjs/react-dom "15.3.1-0"]
                  [org.omcljs/om "1.0.0-alpha47-SNAPSHOT"]
-                 [datascript "0.15.4"]
-                 #_[reagent "0.6.0"]
-                 ]
+                 [datascript "0.15.4"]]
 
   :plugins [[lein-figwheel "0.5.8"]
             [lein-cljsbuild "1.1.4" :exclusions [org.clojure/clojure]]]
