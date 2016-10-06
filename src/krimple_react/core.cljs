@@ -23,17 +23,29 @@
 
 (enable-console-print!)
 
+(def videos
+  "List of available videos (hard-coded at the moment)"
+  [{:item/id "185336500"
+    :item/title "Van Neumann Machine"
+    :item/description "Something about VNMs"}
+   {:item/id "43418419"
+    :item/title "Effective Scala"
+    :item/description "Points, sharp edges, rough patches"}])
+
+(defn map-using
+  "Create a map from a collection, using f to generate the key"
+  [coll f]
+  (let [use-f (fn [accum item]
+                (let [k (f item)]
+                  (assoc accum k item)))]
+    (reduce use-f {} coll)))
+
 (def app-state
   (atom
    {:app/title "Chariot Video Stream (Om.Next)"
     :video/current-id "player-place"
     :video/selected-video "43418419"
-    :video/items {"185336500" {:item/id "185336500"
-                               :item/title "Van Neumann Machine"
-                               :item/description "Something about VNMs"}
-                  "43418419" {:item/id "43418419"
-                              :item/title "Effective Scala"
-                              :item/description "Points, sharp edges, rough patches"}}}))
+    :video/items (map-using videos :item/id)}))
 
 (defmulti read (fn [env key params] key))
 (defmethod read :default
