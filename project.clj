@@ -23,6 +23,15 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                     "target"]
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version"
+                   "leiningen.release/bump-version" "release"]
+                  ["vcs" "commit"]
+                  ["vcs" "tag"]
+                  ["change" "version" "leiningen.release/bump-version"]
+                  ["vcs" "commit"]
+                  ["vcs" "push"]]
+
   
   :source-paths ["src"]
 
