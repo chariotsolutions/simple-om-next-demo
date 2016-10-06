@@ -8,14 +8,14 @@
    ))
 
 (defui MediaPlayerContainer
+  "Container for Media-Player component"
   static om/IQuery
   (query [this]
     (om/get-query MediaPlayerComponent))
   Object
   (render [this]
-    (let [props (om/props this)
-          {:keys [video/current-id]} props]
+    (let [props (om/props this)]
       (dom/div nil
-               (media-player-component (om/props this))))))
+        (media-player-component (om/props this))))))
 
 (def media-player-container (om/factory MediaPlayerContainer))

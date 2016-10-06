@@ -1,13 +1,17 @@
 (ns krimple-react.components.media-list-component
-  "Not quite sure what this is all about"
+  "Renders an unordered list of Media Items
+
+   Note that because this generates a series of otherwise identical LI
+  elements, *React* requires a unique `:key` attribute on each."
   (:require
-   [om.next :as om :refer-macros [defui]]
-   [om.dom :as dom]
    [krimple-react.components.media-item-component
-    :as mic :refer [media-item-component]]))
+    :as mic :refer [media-item-component]]
+   [om.dom :as dom]
+   [om.next :as om :refer-macros [defui]]))
 
 
 (defui MediaListComponent
+  "Generate a `UL` of keyed `LI` items, each holding a Media Item"
   static om/IQuery
   (query [this]
     (let [subquery (om/get-query mic/MediaItemComponent)]
@@ -15,9 +19,8 @@
   Object
   (render [this]
     (let [{:keys [video/items]} (om/props this)]
-      (println "In MLC:\n" (om/props this) "\nOUT OF MLC")
       (dom/ul #js {:className :list-group}
-              (map #(dom/li (clj->js {:key %})
+              (map #(dom/li #js {:key %}
                             (mic/media-item-component (get items %)))
                     (keys items))))))
 

@@ -9,15 +9,17 @@
 
 
 (defui MediaListContainer
+  "Container for a component: not much useful by itself"
   static om/IQuery
   (query [this]
-    [:video/items :video/selected-video :video/current-id])
+    `[:video/items
+      ~@(om/get-query MediaListComponent)])
   Object
   (render [this]
     (let [{:keys [video/items] :as props} (om/props this)]
       (if (and items (pos? (count items)))
         (dom/div #js {:className :pointlessExtraDiv}
-                 (media-list-component props))
+          (media-list-component props))
         (dom/span nil "Please wait...")))))
 
 (def media-list-container (om/factory MediaListContainer))

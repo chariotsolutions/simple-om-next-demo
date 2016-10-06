@@ -1,19 +1,25 @@
 (ns krimple-react.components.media-player-app-component
+  "Component containing the Media List and Media Player.
+
+  This also provides a title for the app!"
   (:require
-   [om.next :as om :refer-macros [defui]]
+   [krimple-react.containers.media-list-container
+    :refer [MediaListContainer media-list-container]]
+   [krimple-react.containers.media-player-container
+    :refer [MediaPlayerContainer media-player-container]]
    [om.dom :as dom]
-   [krimple-react.containers.media-player-container :refer [media-player-container]]
-   [krimple-react.containers.media-list-container :refer [media-list-container]]))
+   [om.next :as om :refer-macros [defui]]))
 
 (defui MediaPlayerAppComponent
+  "Wrap the Media List and the Media Player subcomponents"
   static om/IQuery
   (query [this]
-    [:app/title
-     :video/items :video/current-id :video/selected-video])
+    `[:app/title
+      ~@(om/get-query MediaListContainer)
+      ~@(om/get-query MediaPlayerContainer)])
   Object
   (render [this]
-    (let [props (om/props this)
-          {:keys [app/title video/items video/current-id video/selected-video]} props]
+    (let [{:keys [app/title] :as props} (om/props this)]
       (dom/div #js {:className :container}
         (dom/div #js {:className :row}
           (dom/h1 nil title)
