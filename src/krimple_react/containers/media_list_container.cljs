@@ -18,6 +18,6 @@
       (if (and items (pos? (count items)))
         (dom/div #js {:className :pointlessExtraDiv}
                  (media-list-component props))
-        (dom/span nil "Please wait&hellip;")))))
+        (dom/span nil "Please wait...")))))
 
 (def media-list-container (om/factory MediaListContainer))

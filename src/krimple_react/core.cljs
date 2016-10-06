@@ -95,7 +95,7 @@
   ;; conditionally start the app based on whether the #main-app-area
   ;; node is on the page
   (if-let [node (.getElementById js/document "main-app-area")]
-    (.render js/ReactDOM (sab/html [:div "This is working"]) node)))
+    (om/add-root! reconciler MediaPlayerAppContainer node)))
 
 (main)
 
