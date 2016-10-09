@@ -46,7 +46,6 @@
   Object
   (render [this]
     (let [{:keys [id title description selected-video] :as props} (om/props this)]
-      (println "Somewhere in MediaItem: " props)
       (dom/div (clj->js {:onClick   (fn [e]
                                       (om/transact!
                                        this `[(do/select-video! {:selected-video ~(om/ident this props)})

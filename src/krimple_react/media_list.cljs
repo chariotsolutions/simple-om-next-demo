@@ -18,7 +18,7 @@
   Object
   (render [this]
     (let [{:keys [videos] :as props} (om/props this)]
-      (println "MIL: videos: " videos)
+      (println "MIL: other-props: " (dissoc props :videos))
       (if (and videos (pos? (count videos)))
         (dom/div #js {:className :pointlessExtraDiv}
           (dom/ul #js {:className :list-group}

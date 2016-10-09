@@ -41,7 +41,6 @@
 
   (componentDidMount [this]
     (let [props (om/props this)
-          _ (println "CDM: props: " props)
           {player-element-id :player-element-id
            {selected-video-id :id} '[:selected-video _]} props]
       (if-let [player (om/get-state this :player)]
@@ -49,8 +48,6 @@
           (.log js/console (str "CDM: Re-using existing Vimeo Player...: '" selected-video-id "'"))
           (.loadVideo player selected-video-id))
         (try
-          (println "CDM: Attempting to create a player for video '" selected-video-id
-                   "' at '" player-element-id "'")
           (let [player-options #js {:id     selected-video-id
                                     :width  640
                                     :height 480

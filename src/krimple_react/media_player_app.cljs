@@ -30,11 +30,9 @@
             (dom/hr nil))
           (dom/div #js {:className :row}
             (dom/div #js {:className :col-md-5}
-              (println "media-list props: " media-list)
               (ml/media-list media-list))
             (dom/div #js {:className :col-md-2})
             (dom/div #js {:className :col-md-5}
-              (println "media-player props: " media-player)
               (mp/media-player media-player))))))))
 
 (def media-player-app (om/factory MediaPlayerApp))
