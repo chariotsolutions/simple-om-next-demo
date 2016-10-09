@@ -1,4 +1,4 @@
-(defproject krimple-react "0.2.0"
+(defproject krimple-react "0.2.1-SNAPSHOT"
   :description "Minimal Om.Next/React demo program"
   :url "https://github.com/chariotsolutions/simple-om-next-demo"
   :license {:name "Eclipse Public License"
