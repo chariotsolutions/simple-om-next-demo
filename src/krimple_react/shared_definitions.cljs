@@ -10,16 +10,29 @@
   "List of available videos (hard-coded at the moment)"
   [{:id "185336500"
     :title "Van Neumann Machine"
-    :description "Something about VNMs"}
+    :description "Something about VNMs"
+    :related-videos []}
+   {:id "179160976"
+    :title "Adventures in Elm: Events, Reproducibility, and Kindness"
+    :description "What do you get when you combine strict functional programming with heavy user interaction? Challenges, and unexpected freedoms. Elm is a purely functional language for the browser. It compiles…"
+    :related-videos [[:videos/by-id "184394491"]
+                     [:videos/by-id "43418419"]]}
    {:id "184394491"
     :title "Why does Functional Programming Even Matter?"
-    :description "Sujan Kapadia"}
+    :description "Sujan Kapadia"
+    :related-videos [[:videos/by-id "179160976"]
+                     [:videos/by-id "43418419"]]}
+   {:id "167447746"
+    :title "Pitfalls in Technology Selection"
+    :description "Technology is an ever-changing arena where it seems that everything is the one perfect solution for all your problems. When someone shows you the Next Big Thing, how can you be sure that it will work?"}
    {:id "184068444"
     :title "Sea Child"
     :description "Random video"}
    {:id "43418419"
     :title "Effective Scala"
-    :description "Points, sharp edges, rough patches"}])
+    :description "Points, sharp edges, rough patches"
+    :related-videos [[:videos/by-id "184394491"]
+                     [:videos/by-id "179160976"]]}])
 
 (declare reconciler log-this!)
 
