@@ -54,18 +54,22 @@
       [:selected-video _]])
   Object
   (render [this]
-    (let [{:keys [id title description selected-video] :as props} (om/props this)]
+    (let [{:keys [id title description selected-video]} (om/props this)
+          when-current (fn ([is]
+                            (if (is-current-video? this) is ""))
+                           ([is isnt]
+                            (if (is-current-video? this) is isnt)))]
       (dom/div
         (clj->js
          {:onClick #(media-item-clicked this %)
           :className (str "list-group-item "
-                          (if (is-current-video? this) "active" ""))
+                          (when-current "active" ""))
           :style  {:margin "12px 0px"
                    :borderWidth 5
-                   :backgroundColor "#dddddd"
-                   :borderStyle (if (is-current-video? this) "inset" "outset")}})
+                   :backgroundColor "#efefef"
+                   :borderStyle (when-current "inset" "outset")}})
         (dom/h3 nil title)
-        #_(dom/h4 nil (if (= id (:id selected-video)) "Now playing..." ""))
+        #_(dom/h4 nil (when-current "Now playing..." ""))
         ;; Limit the description length to that of a Tweet...
         (dom/p nil (truncate-description description 140))))))
 
