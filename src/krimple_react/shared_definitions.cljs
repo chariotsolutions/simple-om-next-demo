@@ -279,3 +279,12 @@
     (om/transact! reconciler `[(do/set-logging! {:logging-enabled ~desired-logging-state})
                                :logging-enabled])
     (s/explain ::boolean desired-logging-state)))
+
+(defn set-video!
+  "Set a particular video as selected"
+  [n]
+  (let [videos (:videos (get-the-state reconciler))]
+    (if (contains? videos n)
+      (om/transact! reconciler `[(do/select-video! {:selected-video ~(videos n)})
+                                 :selected-video])
+      (println "Video out of range"))))
