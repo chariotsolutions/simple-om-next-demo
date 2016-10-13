@@ -11,6 +11,7 @@
                  [devcards "0.2.2"]
                  [sablono "0.7.4"]
                  [devcards-om-next "0.3.0"]                 
+                 [org.clojure/core.async "0.2.391"]
                  ;; need to specify this for sablono
                  ;; when not using devcards
                  [cljsjs/react "15.3.1-0"]

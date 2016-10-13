@@ -11,14 +11,19 @@
    [om.next :as om :refer-macros [defui]]))
 
 (defui ^:once MediaPlayerApp
-  "Component containing a list of Media items and a player to show them"
-  static om/IQuery
-  (query [this]
-    (let [ml-query (om/get-query MediaList)
-          mp-query (om/get-query MediaPlayer)]
-      `[:title
-        {:media-list ~ml-query}
-        {:media-player ~mp-query}]))
+  "
+  Component containing a list of Media items and a player to show them.
+
+  This component is a root component, and so should not need to extend
+  the `IQuery`: everything is passed to it.
+"
+  ;; static om/IQuery
+  ;; (query [this]
+  ;;   (let [ml-query (om/get-query MediaList)
+  ;;         mp-query (om/get-query MediaPlayer)]
+  ;;     `[:title
+  ;;       {:media-list ~ml-query}
+  ;;       {:media-player ~mp-query}]))
 
   Object
   (render [this]

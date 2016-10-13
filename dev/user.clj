@@ -41,3 +41,8 @@
   []
   (f/cljs-repl))
 
+(defn tmpfn [ast]
+  (update-in ast [:children 0 :query]
+             #(->> (for [[k _] %]
+                     [k [:favorites]])
+                   (into {}))))

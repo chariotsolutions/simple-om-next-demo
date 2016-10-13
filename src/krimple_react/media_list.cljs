@@ -13,18 +13,34 @@
   static om/IQuery
   (query [this]
     (let [subquery (om/get-query mi/MediaItem)]
-      `[{:videos ~subquery}]))
+      `[{:videos ~subquery}
+        :sort-order]))
 
   Object
   (render [this]
     (let [{:keys [videos] :as props} (om/props this)]
-      (println "MIL: other-props: " (dissoc props :videos))
-      (if (and videos (pos? (count videos)))
-        (dom/div #js {:className :pointlessExtraDiv}
+      (dom/div #js {:className :pointlessExtraDiv}
+        #_(dom/fieldset (clj->js {:style {:borderStyle :groove}})
+          (dom/label nil
+            (dom/input #js {:key :unsorted
+                            :type "radio"
+                            :checked true})
+            "Unsorted")
+          (dom/label nil
+            (dom/input #js {:key :title
+                            :type "radio"
+                            :checked false})
+            "Title")
+          (dom/label nil
+            (dom/input #js {:key :description
+                            :type "radio"
+                            :checked false})
+            "Description"))
+        (if (and videos (pos? (count videos)))
           (dom/ul #js {:className :list-group}
-                  (map #(dom/li #js {:key (:id %)}
-                                (mi/media-item %))
-                       videos)))
-        (dom/span nil "Please wait...")))))
+            (map #(dom/li #js {:key (:id %)}
+                          (mi/media-item %))
+                 videos))
+          (dom/span nil "Please wait..."))))))
 
 (def media-list (om/factory MediaList))
