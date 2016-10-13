@@ -1,7 +1,7 @@
 (ns krimple-react.shared-definitions
   (:require
-   [cljs.core.async
-    :refer [<! >! put! chan timeout]]
+   [cljs.core.async :refer [<! >! put! chan timeout]]
+   [clojure.spec :as s]
    [om.next :as om :refer-macros [defui]])
   (:require-macros
    [cljs.core.async.macros :refer [go go-loop]]))
@@ -21,7 +21,7 @@
     :title "Effective Scala"
     :description "Points, sharp edges, rough patches"}])
 
-(declare log-this!)
+(declare reconciler log-this!)
 
 (def app-state
   "All application state:
@@ -31,11 +31,11 @@
   - The ID of the video to show first
   - A \"database\" of videos"
   {:title          "Chariot Video Stream (Om.Next)"
-   :media-list     {:videos []
-                    :sort-order :unsorted}
+   :sort-order :unsorted
+   :videos []
    :media-player   {:player-element-id "player-place"}
    :selected-video {:id "NO VIDEO"}
-   :logging-enabled false})
+   :logging-enabled true})
 
 (defmulti read
   "Return data from the application state, depending on the key given.
@@ -118,7 +118,7 @@
   "Return video IDs in the current state"
   [])
 
-#_(defmethod read :videos
+(defmethod read :videos
   [{:keys [query state ast]} k params]
   (log-this! state (str "Reading :videos"
                   "\nst: " @state
@@ -128,12 +128,13 @@
                   "\np: " params))
   (let [st @state
         value-result (om/db->tree query (get st k) st)]
-    (log-this! state "Results of reading :videos\n\t" value-result "\n\t" ast)
+    (log-this! state "Results of reading :videos\n\t:value \"" value-result "\"\n\t:vimeo \"" ast "\"}")
     {:value value-result
-     :vimeo ast}))
+     :vimeo true ;ast
+     }))
 
 (defmethod read :media-list
-  [{:keys [query ast state]} k params]
+  [{:keys [query parser ast state] :as env} k params]
   (log-this! state (str "Reading :media-list"
                 "\nst: " @state
                 "\nq: " query
@@ -141,10 +142,9 @@
                 "\nk: " k
                 "\np: " params))
   (let [st @state
-        value-result (om/db->tree query (get st k) st)]
+        value-result (parser env query)]
     (log-this! state "Results of reading :media-list\n\t" value-result "\n\t" ast)
-    {:value value-result
-     :vimeo ast}))
+    {:value value-result}))
 
 (defmethod read :media-player
   [{:keys [query state]} k _]
@@ -170,42 +170,69 @@
                    :selected-video selected-video)
    :value {:keys [:selected-video]}})
 
-(defmethod mutate 'toggle-logging!
+(defmethod mutate 'do/toggle-logging!
   [{:keys [state] :as env} _ _]
   {:action #(swap! state update :logging-enabled (fn [x] (not x)))
    :value {:keys [:logging-enabled]}})
 
-(defn get-the-state
+(defn get-the-state-atom
+  "Given a component, or a reconciler, or the state atom, return the state atom.
+
+        (swap! (get-the-state-atom reconciler) assoc :logging-enabled true)    
+"
   [x]
-  (as-> x uut
-    (cond-> uut (om/component? uut) (om/get-reconciler))
-    (cond-> uut (om/reconciler? uut) (get-in [:config :state] {}))
-    (cond-> uut (instance? Atom uut) (deref))))
+  (as-> x thing
+    ;; If `thing` is a component, get its reconciler
+    (cond-> thing (om/component? thing) (om/get-reconciler))
+    ;; If 'thing` is a reconciler, pull the state atom out of it
+    (cond-> thing (om/reconciler? thing) (get-in [:config :state] {}))))
+
+(defn get-the-state
+  "Given a component, or a reconciler, a state atom, or the state, return the state.
+
+        (when (:logging-enabled (get-the-state reconciler))
+          (.log js/conaole \"we made it this far\"))
+"
+  [x]
+  (as-> x thing
+    ;; Get the state atom from thing (assuming its there)
+    (get-the-state-atom thing)
+    ;; If what we have is an atom, deref it; or return it
+    (cond-> thing (instance? Atom thing) (deref))))
 
 (defn log-this!
   [x & args]
-  [app-state (get-the-state x)]
-  (if (get app-state :logging-enabled true)
-    (try
-      (apply println args)
-      (catch js/Object o))))
+  (let [app-state (get-the-state x)]
+    (if (get app-state :logging-enabled true)
+      (try
+        (apply println args)
+        (catch js/Object o)))))
 
 (let [known-videos (atom [])]
+  (defn vimeo-known-video-reset!
+    []
+    (reset! known-videos []))
   (defn vimeo-remote
     "Incrementally add videos to the list of available videos"
     [query-maybe cb]
-    (log-this! {} "****************************************")
-    (log-this! {} "vimeo-remote: qm:" query-maybe)
-    (log-this! {} "****************************************")
+    (println "****************************************")
+    (println "****************************************")
+    (println "****************************************")
+    (println "****************************************")
+    (println "****************************************")
+    (println "****************************************")
+    (log-this! reconciler "****************************************")
+    (log-this! reconciler "vimeo-remote: qm:" query-maybe)
+    (log-this! reconciler "****************************************")
     (go
       (<! (timeout 5000))
       (loop [[video & vs] videos]
         (let [id-set (set (map :id @known-videos))]
-          (log-this! {} "id-set:" id-set)
+          (log-this! reconciler "id-set:" id-set)
           (when-not (contains? id-set (:id video))
-            (log-this! {} "Providing " video)
+            (log-this! reconciler "Providing " video)
             (swap! known-videos conj video)
-            (cb {:media-list {:videos @known-videos}})))
+            (cb {:videos @known-videos})))
         (if (seq vs)
           (recur vs))))))
 
@@ -222,10 +249,10 @@
   the project I was working on at the time.)
 "
   [map-with-remote-queries cb]
-  (log-this! {} "****************************************\nremotes:" map-with-remote-queries
+  (log-this! reconciler "****************************************\nremotes:" map-with-remote-queries
            "\n****************************************")
   (when-let [{:keys [vimeo]} map-with-remote-queries]
-    (log-this! {} "Sending off to vimeo-remote")
+    (log-this! reconciler "Sending off to vimeo-remote")
     (vimeo-remote vimeo cb)))
 
 (def my-parser
@@ -233,7 +260,22 @@
   (om/parser {:read read :mutate mutate}))
 
 ;; The Om Reconciler ties state and the parser together
-(def reconciler
+(defonce reconciler
   (om/reconciler {:state app-state :parser my-parser :send my-sender
                   :remotes [:vimeo]}))
 
+(s/def ::boolean #(or (= true %)
+                      (= false %)))
+
+(defmethod mutate 'do/set-logging!
+  [{:keys [state]} _ {:keys [logging-enabled]}]
+  {:action #(swap! state assoc :logging-enabled logging-enabled)
+   :value {:keys [:logging-enabled]}})
+
+(defn set-logging!
+  "Turn logging on or off"
+  [desired-logging-state]
+  (if (s/valid? ::boolean desired-logging-state)
+    (om/transact! reconciler `[(do/set-logging! {:logging-enabled ~desired-logging-state})
+                               :logging-enabled])
+    (s/explain ::boolean desired-logging-state)))

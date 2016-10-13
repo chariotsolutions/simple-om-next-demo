@@ -30,6 +30,15 @@
          (if (> (count description) max-length) "..." ""))
     ""))
 
+(defn media-item-clicked
+  "Handle a click on this item"
+  [this _]
+  (let [props (om/props this)
+        my-video-id (om/ident this props)]
+    (om/transact!
+     this `[(do/select-video! {:selected-video ~my-video-id})
+            :selected-video])))
+
 (defui ^:once MediaItem
   "Represent a single video. If clicked, request selection of this video."
   static om/Ident
@@ -39,23 +48,22 @@
     [:videos/by-id id])
   static om/IQuery
   ;; This is what we need to render our data. `:selected-video`
-  ;; will be passed in as a *computed* value
+  ;; is from the top-level
   (query [this]
     '[:id :title :description
       [:selected-video _]])
   Object
   (render [this]
     (let [{:keys [id title description selected-video] :as props} (om/props this)]
-      (dom/div (clj->js {:onClick   (fn [e]
-                                      (om/transact!
-                                       this `[(do/select-video! {:selected-video ~(om/ident this props)})
-                                              :selected-video]))
-                         :className (str "list-group-item "
-                                         (if (is-current-video? this) "active" ""))
-                         :style  {:margin "12px 0px"
-                                  :borderWidth 5
-                                  :backgroundColor "#dddddd"
-                                  :borderStyle (if (is-current-video? this) "inset" "outset")}})
+      (dom/div
+        (clj->js
+         {:onClick #(media-item-clicked this %)
+          :className (str "list-group-item "
+                          (if (is-current-video? this) "active" ""))
+          :style  {:margin "12px 0px"
+                   :borderWidth 5
+                   :backgroundColor "#dddddd"
+                   :borderStyle (if (is-current-video? this) "inset" "outset")}})
         (dom/h3 nil title)
         #_(dom/h4 nil (if (= id (:id selected-video)) "Now playing..." ""))
         ;; Limit the description length to that of a Tweet...
