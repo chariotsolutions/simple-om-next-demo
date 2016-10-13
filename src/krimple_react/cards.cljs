@@ -53,3 +53,10 @@
   {:inspect-data true})
 
 
+(defcard-om-next media-list-test-multilevel-data
+  "See what the `MediaList` does: you can click on either of the
+  two (or more, someday) elements below. However, this has to
+  run where we have multilevel data."
+  MediaList
+  reconciler
+  {:inspect-data true})
