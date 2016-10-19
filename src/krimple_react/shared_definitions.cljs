@@ -6,35 +6,43 @@
   (:require-macros
    [cljs.core.async.macros :refer [go go-loop]]))
 
-(def videos
+(def server-video-list
   "List of available videos (hard-coded at the moment)"
-  [{:id "185336500"
-    :title "Van Neumann Machine"
-    :description "Something about VNMs"
-    :related-videos []}
-   {:id "179160976"
-    :title "Adventures in Elm: Events, Reproducibility, and Kindness"
-    :description "What do you get when you combine strict functional programming with heavy user interaction? Challenges, and unexpected freedoms. Elm is a purely functional language for the browser. It compiles…"
-    :related-videos [[:videos/by-id "184394491"]
-                     [:videos/by-id "43418419"]]}
-   {:id "184394491"
-    :title "Why does Functional Programming Even Matter?"
-    :description "Sujan Kapadia"
-    :related-videos [[:videos/by-id "179160976"]
-                     [:videos/by-id "43418419"]]}
-   {:id "167447746"
-    :title "Pitfalls in Technology Selection"
-    :description "Technology is an ever-changing arena where it seems that everything is the one perfect solution for all your problems. When someone shows you the Next Big Thing, how can you be sure that it will work?"}
-   {:id "184068444"
-    :title "Sea Child"
-    :description "Random video"}
-   {:id "43418419"
-    :title "Effective Scala"
-    :description "Points, sharp edges, rough patches"
-    :related-videos [[:videos/by-id "184394491"]
-                     [:videos/by-id "179160976"]]}])
+  [{:video/id "185336500"
+    :video/title "Van Neumann Machine"
+    :video/description "Something about VNMs"
+    :video/related-videos []}
+   {:video/id "179160976"
+    :video/title "Adventures in Elm:video/ Events, Reproducibility, and Kindness"
+    :video/description (str "What do you get when you combine strict"
+                            " functional programming with heavy user interaction?"
+                            " Challenges, and"
+                            " unexpected freedoms. Elm is a purely functional language"
+                            " for the browser. It compiles…")
+    :video/related-videos [[:videos/by-id "184394491"]
+                           [:videos/by-id "43418419"]]}
+   {:video/id "184394491"
+    :video/title "Why does Functional Programming Even Matter?"
+    :video/description "Sujan Kapadia"
+    :video/related-videos [[:videos/by-id "179160976"]
+                           [:videos/by-id "43418419"]]}
+   {:video/id "167447746"
+    :video/title "Pitfalls in Technology Selection"
+    :video/description (str "Technology is an ever-changing arena where it"
+                            " seems that everything is the one perfect"
+                            " solution for all your problems. When someone shows"
+                            " you the Next Big Thing, how can you"
+                            " be sure that it will work?")}
+   {:video/id "184068444"
+    :video/title "Sea Child"
+    :video/description "Random video"}
+   {:video/id "43418419"
+    :video/title "Effective Scala"
+    :video/description "Points, sharp edges, rough patches"
+    :video/related-videos [[:videos/by-id "184394491"]
+                           [:videos/by-id "179160976"]]}])
 
-(declare reconciler log-this!)
+(declare reconciler)
 
 (def app-state
   "All application state:
@@ -43,12 +51,14 @@
   - A place to put the *Vimeo Player*
   - The ID of the video to show first
   - A \"database\" of videos"
-  {:title          "Chariot Video Stream (Om.Next)"
-   :sort-order :unsorted
-   :videos []
-   :media-player   {:player-element-id "player-place"}
-   :selected-video {:id "NO VIDEO"}
-   :logging-enabled true})
+  {:app/title        "Chariot Video Stream (Om.Next)"
+   :app/videos       []
+   :app/media-player {:player-element-id "player-place"}
+   :selected-video   [:videos/by-id "NO VIDEO"]
+   :videos/by-id     {"NO VIDEO" {:video/id          "NO VIDEO"
+                                  :video/title       "No Video selected or available"
+                                  :video/description "Videos have not yet been loaded, or none are available"}}
+   :logging-enabled  false})
 
 (defmulti read
   "Return data from the application state, depending on the key given.
@@ -56,110 +66,31 @@
   for arbitarily complex queries."
   (fn [env key params] key))
 
-(defn get-videos
-  "Return the videos"
-  [state k]
-  (let [st @state]
-    (into [] (map #(get-in st %)) (get st k))))
-
 ;; Look up data by key by default.
 ;;
 ;; Return `:not-found` in case it isn't found!
 (defmethod read :default
   [{:keys [state query] :as env} k params]
-  (let [{:keys [logging-enabled]} @state]
-    (log-this! state (str "reading :default"
-                          "\nst: " @state
-                          "\nq: " query
-                          "\nk: " k
-                          "\np: " params))
-    (let [st @state]
-      (if-let [[_ value] (find st k)]
-        (let [result value]
-          (log-this! state "result: " result)
-          {:value value})
-        (if-let [query (:query env)]
-          (let [result (om/db->tree query st st)]
-            (log-this! state "q-result: " result)
-            {:value result})
-          (do
-            (log-this! state "result: :not-found")
-            {:value :not-found}))))))
+  (let [st @state]
+    (if-let [[_ value] (find st k)]
+      {:value value}
+      (if-let [query (:query env)]
+        {:value (om/db->tree query st st)}
+        {:value :not-found}))))
 
-#_(defmethod read :videos
-    "Not working as expected"
-  [{:keys [state ast query] :as env} k params]
-  (log-this! state (str "Reading :videos"
-                "\nst: " @state
-                "\nq: " query
-                "\na: " ast
-                "\nk: " k
-                "\np: " params))
-  (let [result (get-videos state k)]
-    (log-this! state "result: " result)
-    {:value result}))
-
-(defn is-om-link?
-  "Is this query-element a top-level \"link\"?"
-  [q-elem]
-  (and (vector? q-elem)
-       (= 2 (count q-elem))
-       (= '_ (second q-elem))))
-
-(defn is-om-ident?
-  "Is this query-element an Om-Next/React key?"
-  [q-elem]
-  (and (vector? q-elem)
-       (= 2 (count q-elem))
-       (not= '_ (second q-elem))))
-
-(defn is-om-ident-or-link?
-  "Is this an internal key of some sort?"
-  [q-elem]
-  (or (is-om-ident? q-elem)
-      (is-om-link? q-elem)))
-
-(defn extract-video-id
-  "Extract video-id from item, whether a link
-  or a map"
-  [video-item]
-  (if (is-om-ident? video-item)
-    (second video-item)
-    (:id video-item)))
-
-(defn current-video-ids
-  "Return video IDs in the current state"
-  [])
-
-(defmethod read :videos
+(defmethod read :app/videos
   [{:keys [query state ast]} k params]
-  (log-this! state (str "Reading :videos"
-                  "\nst: " @state
-                  "\nq: " query
-                  "\na: " ast
-                  "\nk: " k
-                  "\np: " params))
   (let [st @state
         value-result (om/db->tree query (get st k) st)]
-    (log-this! state "Results of reading :videos\n\t:value \"" value-result "\"\n\t:vimeo \"" ast "\"}")
-    {:value value-result
-     :vimeo true ;ast
-     }))
-
-(defmethod read :media-list
-  [{:keys [query parser ast state] :as env} k params]
-  (log-this! state (str "Reading :media-list"
-                "\nst: " @state
-                "\nq: " query
-                "\na: " ast
-                "\nk: " k
-                "\np: " params))
-  (let [st @state
-        value-result (parser env query)]
-    (log-this! state "Results of reading :media-list\n\t" value-result "\n\t" ast)
     {:value value-result}))
 
-(defmethod read :media-player
+(defmethod read :app/media-list
+  [{:keys [query parser ast state] :as env} k params]
+  (let [st @state]
+    {:value (parser env query)
+     :remote true}))
+
+(defmethod read :app/media-player
   [{:keys [query state]} k _]
   (let [st @state]
     {:value (om/db->tree query (get st k) st)}))
@@ -219,7 +150,8 @@
     (if (get app-state :logging-enabled true)
       (try
         (apply println args)
-        (catch js/Object o)))))
+        (catch js/Object o
+          (println (str "Failed to log-that: " o)))))))
 
 (let [known-videos (atom [])]
   (defn vimeo-known-video-reset!
@@ -228,26 +160,22 @@
   (defn vimeo-remote
     "Incrementally add videos to the list of available videos"
     [query-maybe cb]
-    (println "****************************************")
-    (println "****************************************")
-    (println "****************************************")
-    (println "****************************************")
-    (println "****************************************")
-    (println "****************************************")
-    (log-this! reconciler "****************************************")
-    (log-this! reconciler "vimeo-remote: qm:" query-maybe)
-    (log-this! reconciler "****************************************")
     (go
-      (<! (timeout 5000))
-      (loop [[video & vs] videos]
-        (let [id-set (set (map :id @known-videos))]
-          (log-this! reconciler "id-set:" id-set)
-          (when-not (contains? id-set (:id video))
-            (log-this! reconciler "Providing " video)
-            (swap! known-videos conj video)
-            (cb {:videos @known-videos})))
-        (if (seq vs)
-          (recur vs))))))
+      (loop [[video & vs] server-video-list
+             ui-video-list []
+             ui-video-db {}]
+        (<! (timeout 2000))
+        (let [new-video-id (:video/id video)
+              id-set (set (map :video/id @known-videos))]
+          (if (contains? id-set new-video-id)
+            (if (seq vs) (recur vs ui-video-list ui-video-db))
+            (let [new-db (assoc ui-video-db new-video-id video)
+                  new-list (conj ui-video-list `[:videos/by-id ~new-video-id])]
+              (swap! known-videos conj video)
+              (cb {:app/videos new-list
+                   :videos/by-id new-db})
+              (if (seq vs)
+          (recur vs new-list new-db)))))))))
 
 (defn my-sender
   "
@@ -262,10 +190,10 @@
   the project I was working on at the time.)
 "
   [map-with-remote-queries cb]
-  (log-this! reconciler "****************************************\nremotes:" map-with-remote-queries
+  #_(log-this! reconciler "****************************************\nremotes:" map-with-remote-queries
            "\n****************************************")
   (when-let [{:keys [vimeo]} map-with-remote-queries]
-    (log-this! reconciler "Sending off to vimeo-remote")
+    #_(log-this! reconciler "Sending off to vimeo-remote")
     (vimeo-remote vimeo cb)))
 
 (def my-parser
@@ -275,7 +203,7 @@
 ;; The Om Reconciler ties state and the parser together
 (defonce reconciler
   (om/reconciler {:state app-state :parser my-parser :send my-sender
-                  :remotes [:vimeo]}))
+                  :remotes [:remote]}))
 
 (s/def ::boolean #(or (= true %)
                       (= false %)))
@@ -296,7 +224,7 @@
 (defn set-video!
   "Set a particular video as selected"
   [n]
-  (let [videos (:videos (get-the-state reconciler))]
+  (let [videos (:app/videos (get-the-state reconciler))]
     (if (contains? videos n)
       (om/transact! reconciler `[(do/select-video! {:selected-video ~(videos n)})
                                  :selected-video])

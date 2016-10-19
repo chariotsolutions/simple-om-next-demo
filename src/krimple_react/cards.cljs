@@ -9,7 +9,7 @@
    [krimple-react.media-player :refer (MediaPlayer media-player)]
    [krimple-react.media-player-app :refer (MediaPlayerApp media-player-app)]
    [krimple-react.shared-definitions
-    :refer [app-state reconciler my-sender my-parser log-this!]]
+    :refer [app-state reconciler my-sender my-parser]]
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :as sab :include-macros true])
@@ -39,24 +39,32 @@
                       :value (if logging-enabled "on" "off")
                       :checked logging-enabled
                       :onChange #(logging-changed this %)}]
-      (dom/div #js {:className :logging-toggle-div}
+      (dom/div #js {:className "logging-toggle-div"}
         (dom/label nil
           (dom/input (clj->js cb-options))
           "Enable logging")))))
 
 (def logging-toggle (om/factory LoggingToggle))
 
-(defcard-om-next logging-status
+#_(defcard-om-next logging-status
   "Allow logging to be toggled"
   LoggingToggle
   reconciler
-  {:inspect-data true})
+  {:inspect-data false})
 
 
-(defcard-om-next media-list-test-multilevel-data
+#_(defcard-om-next media-list-test-multilevel-data
   "See what the `MediaList` does: you can click on either of the
   two (or more, someday) elements below. However, this has to
   run where we have multilevel data."
   MediaList
   reconciler
+  {:inspect-data true})
+
+
+(defcard-om-next full-application
+  "Test the full application through `MediaPlayerApp`"
+  MediaPlayerApp
+  reconciler
+  app-state
   {:inspect-data true})

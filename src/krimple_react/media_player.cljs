@@ -11,6 +11,41 @@
    [om.next :as om :refer-macros [defui]]))
 
 
+(defn create-player
+  "Create the Vimeo Player we need.
+
+  Until we have a selected video, we don't need it, so this may not be
+  called when we first mount."
+  ([this selected-video-id]
+   (create-player this selected-video-id "player-place"))
+  ([this selected-video-id player-element-id]
+   (create-player this selected-video-id player-element-id "DBGLBL"))
+  ([this selected-video-id player-element-id debug-label]
+   (try
+     (let [player-options #js {:id     selected-video-id
+                               :width  640
+                               :height 480
+                               :loop   false}
+           player         (Vimeo.Player. player-element-id
+                                         player-options)]
+       (om/update-state! this assoc :player player))
+     (catch js/Error e
+       (let [msg (str debug-label ": Player not available\n" e)]
+         (println msg)
+         (js/alert msg))))))
+
+(defn player-requirements-ok?
+  "Are the things we need for a Vimeo Player available?
+
+     - A player location
+     - A selected video
+     - A selected video that isn't 'NO VIDEO' :-) "
+  [this]
+  (let [{:keys [player-element-id selected-video] :as props} (om/props this)]
+    (and player-element-id
+         selected-video
+         (not= "NO VIDEO" (:video/id selected-video)))))
+
 (defui ^:once MediaPlayer
   "Manage a *Vimeo Media Player*, updating it as the selected video
   changes.
@@ -23,40 +58,37 @@
 
   Object
   (render [this]
-    (let [{player-element-id :player-element-id
-           {selected-video-id :id} :selected-video} (om/props this)]
-      (dom/div nil
-        (dom/div (clj->js {:data-vimeo-id    selected-video-id
-                           :data-vimeo-width 640
-                           :style            {:width  640
-                                              :height 480}
-                           :id               player-element-id})))))
+    (if (player-requirements-ok? this)
+      (let [{player-element-id :player-element-id
+             {selected-video-id :video/id} :selected-video} (om/props this)]
+        (dom/div nil
+          (dom/div (clj->js {:data-vimeo-id    selected-video-id
+                             :data-vimeo-width 640
+                             :style            {:width  640
+                                                :height 480}
+                             :id               player-element-id}))))
+      (dom/p nil "Please select a video when available")))
 
   (componentDidUpdate [this _ _]
     ;; We use neither `prev-props` nor `prev-state`
-    (let [{{selected-video-id :id} :selected-video} (om/props this)]
-      (if-let [player (om/get-state this :player)]
-        (.loadVideo player selected-video-id)
-        (println "No player to load..."))))
+    (when (player-requirements-ok? this)
+      (let [{:keys [selected-video player-element-id]} (om/props this)
+            {selected-video-id :video/id} selected-video]
+        ;; Use the existing Vimeo player, or create a new one if there
+        ;; isn't one
+        (if-let [player (om/get-state this :player)]
+          (.loadVideo player selected-video-id)
+          (create-player this selected-video-id player-element-id "CDU")))))
 
   (componentDidMount [this]
-    (let [props (om/props this)
-          {player-element-id :player-element-id
-           {selected-video-id :id} '[:selected-video _]} props]
-      (if-let [player (om/get-state this :player)]
-        (do
-          (.log js/console (str "CDM: Re-using existing Vimeo Player...: '" selected-video-id "'"))
-          (.loadVideo player selected-video-id))
-        (try
-          (let [player-options #js {:id     selected-video-id
-                                    :width  640
-                                    :height 480
-                                    :loop   false}
-                player         (Vimeo.Player. player-element-id
-                                              player-options)]
-            (om/update-state!
-             this assoc :player player))
-          (catch js/Error e
-            (js/alert (str "CDM: Player not available\n" e))))))))
+    (when (player-requirements-ok? this)
+      (let [props (om/props this)
+            {:keys [player-element-id selected-video]} props
+            selected-video-id (:video/id selected-video)]
+        (if-let [player (om/get-state this :player)]
+          ;; Re-use player that already exists
+          (.loadVideo player selected-video)
+          ;; Create a new player
+          (create-player this selected-video-id player-element-id "CDM"))))))
 
 (def media-player (om/factory MediaPlayer))

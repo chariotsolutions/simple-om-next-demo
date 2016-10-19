@@ -1,1 +1,37 @@
 /* krimple-react CSS */
+
+div.list-group-item {
+}
+
+div.pointlessExtraDiv {
+}
+
+ul.list-group {
+    list-style-type: none;
+    overflow: scroll;
+    height: 12em;
+}
+
+ul.list-group li {
+    list-style-type: none;
+    z-index: 1;
+}
+
+ul.list-group li:hover {
+    z-index: 3;
+    background-color: gold;
+    border: thick black ridge;
+    
+}
+
+div.container {
+}
+
+
+ul.related-videos {
+    list-style-type: bullet;
+}
+
+li.related-video {
+    font-size: 75%;
+}

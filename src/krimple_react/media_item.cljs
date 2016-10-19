@@ -1,21 +1,12 @@
 (ns krimple-react.media-item
   "Display an individual media item from Vimeo
 
-  Given properties `:id`, `:title`, and `:description`,
+  Given properties `:video/id`, `:video/title`, and `:video/description`,
   display the *title* and *description*, truncating the *description*
-  if need be.
-
-  **Not Yet Supported:** add the `active` class if this video is the
-  one currently selected for playing."
+  if need be."
   (:require
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]))
-
-(defn is-current-video?
-  "Return true if the props suggest this is the current video"
-  [this]
-  (let [{:keys [id selected-video]} (om/props this)]
-    (= id (:id selected-video))))
 
 (defn truncate-description
   "If the description is too long, shorten it and add an ellipsis.
@@ -42,36 +33,67 @@
 (defui ^:once MediaItem
   "Represent a single video. If clicked, request selection of this video."
   static om/Ident
-  ;; Given something with an `:id`, map it to a media item in the
+  ;; Given something with a `:video/id`, map it to a media item in the
   ;; app's state
-  (ident [_ {:keys [id]}]
+  (ident [_ {:keys [video/id]}]
     [:videos/by-id id])
   static om/IQuery
   ;; This is what we need to render our data. `:selected-video`
   ;; is from the top-level
   (query [this]
-    '[:id :title :description
-      [:selected-video _]])
+    '[:video/id :video/title :video/description {:video/related-videos [:video/id :video/title]}])
   Object
   (render [this]
-    (let [{:keys [id title description selected-video]} (om/props this)
+    (let [{:keys [video/id video/title video/description video/related-videos]} (om/props this)
+          {:keys [active?] :or {active? false}} (om/get-computed this)
           when-current (fn ([is]
-                            (if (is-current-video? this) is ""))
+                            (if active? is ""))
                            ([is isnt]
-                            (if (is-current-video? this) is isnt)))]
+                            (if active? is isnt)))
+          div-id (str "video-" id "-container")
+          details-id (str "video-" id "-details")
+          summary-id (str "video-" id "-summary")]
       (dom/div
         (clj->js
-         {:onClick #(media-item-clicked this %)
+         {:id div-id
+          :onClick #(media-item-clicked this %)
           :className (str "list-group-item "
                           (when-current "active" ""))
+          :onMouseOver
+          (fn [e]
+            (let [target (.getElementById js/document details-id)]
+              (set! (.-open target) true)))
+          :onMouseOut
+          (fn [e]
+            (let [target (.getElementById js/document details-id)]
+              (set! (.-open target) false)))
           :style  {:margin "12px 0px"
                    :borderWidth 5
                    :backgroundColor "#efefef"
                    :borderStyle (when-current "inset" "outset")}})
-        (dom/h3 nil title)
-        #_(dom/h4 nil (when-current "Now playing..." ""))
-        ;; Limit the description length to that of a Tweet...
-        (dom/p nil (truncate-description description 140))))))
+        (dom/details (clj->js
+                      {:id details-id})
+          (dom/summary #js {:id summary-id} title)
+          #_(dom/h4 nil (when-current "Now playing..." ""))
+          ;; Limit the description length to that of a Tweet...
+          (dom/p nil (truncate-description description 140))
+          (when-not (empty? related-videos)
+            (let [main-id id]
+              (dom/div nil
+                (dom/p nil "See also...")
+                (dom/ul #js {:className "related-videos"}
+                  (map
+                   (fn [{:keys [video/id video/title] :as related}]
+                     (let [li-id (str main-id "-related-" id)]
+                       (dom/li (clj->js {:className "related-video"
+                                         :id li-id
+                                         :key li-id})
+                               title)))
+                   ;; Some related-video entries will be empty maps, because
+                   ;; the video hasn't been loaded (or normalized) yet. Skip
+                   ;; them the first time, and they will be re-rendered when
+                   ;; the data loads.  (Thanks, React/Om!)
+                   (remove empty? related-videos)))))))))))
 
 
 (def media-item
@@ -79,4 +101,4 @@
 
   Note the use of `:keyfn` to identify the function that *React* uses
   to uniquely identify items of the same type in a series."
-  (om/factory MediaItem {:keyfn :id}))
+  (om/factory MediaItem {:keyfn :video/id}))
