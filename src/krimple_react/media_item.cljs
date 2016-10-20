@@ -41,10 +41,15 @@
   ;; This is what we need to render our data. `:selected-video`
   ;; is from the top-level
   (query [this]
-    '[:video/id :video/title :video/description {:video/related-videos [:video/id :video/title]}])
+    '[:video/id :video/title :video/description
+      :video/thumbnail_medium :video/stats_number_of_likes
+      :video/stats_number_of_plays])
   Object
   (render [this]
-    (let [{:keys [video/id video/title video/description video/related-videos]} (om/props this)
+    (let [{:keys [video/id video/title video/description
+                  video/thumbnail_medium
+                  video/stats_number_of_likes
+                  video/stats_number_of_plays]} (om/props this)
           {:keys [active?] :or {active? false}} (om/get-computed this)
           when-current (fn ([is]
                             (if active? is ""))
@@ -59,41 +64,26 @@
           :onClick #(media-item-clicked this %)
           :className (str "list-group-item "
                           (when-current "active" ""))
-          :onMouseOver
-          (fn [e]
-            (let [target (.getElementById js/document details-id)]
-              (set! (.-open target) true)))
-          :onMouseOut
-          (fn [e]
-            (let [target (.getElementById js/document details-id)]
-              (set! (.-open target) false)))
+          #_(:onMouseOver
+           (fn [e]
+             (let [target (.getElementById js/document details-id)]
+               (set! (.-open target) true)))
+           :onMouseOut
+           (fn [e]
+             (let [target (.getElementById js/document details-id)]
+               (set! (.-open target) false))))
+          :title title
           :style  {:margin "12px 0px"
                    :borderWidth 5
-                   :backgroundColor "#efefef"
+                   :width 200 :height 175
+                   :backgroundImage (str "url(" thumbnail_medium ")")
                    :borderStyle (when-current "inset" "outset")}})
-        (dom/details (clj->js
+        #_(dom/details (clj->js
                       {:id details-id})
           (dom/summary #js {:id summary-id} title)
           #_(dom/h4 nil (when-current "Now playing..." ""))
           ;; Limit the description length to that of a Tweet...
-          (dom/p nil (truncate-description description 140))
-          (when-not (empty? related-videos)
-            (let [main-id id]
-              (dom/div nil
-                (dom/p nil "See also...")
-                (dom/ul #js {:className "related-videos"}
-                  (map
-                   (fn [{:keys [video/id video/title] :as related}]
-                     (let [li-id (str main-id "-related-" id)]
-                       (dom/li (clj->js {:className "related-video"
-                                         :id li-id
-                                         :key li-id})
-                               title)))
-                   ;; Some related-video entries will be empty maps, because
-                   ;; the video hasn't been loaded (or normalized) yet. Skip
-                   ;; them the first time, and they will be re-rendered when
-                   ;; the data loads.  (Thanks, React/Om!)
-                   (remove empty? related-videos)))))))))))
+          (dom/p nil (truncate-description description 140)))))))
 
 
 (def media-item

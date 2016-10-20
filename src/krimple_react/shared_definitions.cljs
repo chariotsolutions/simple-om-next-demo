@@ -2,6 +2,7 @@
   (:require
    [cljs.core.async :refer [<! >! put! chan timeout]]
    [clojure.spec :as s]
+   [krimple-react.video-catalog :as vidcat]
    [om.next :as om :refer-macros [defui]])
   (:require-macros
    [cljs.core.async.macros :refer [go go-loop]]))
@@ -161,10 +162,10 @@
     "Incrementally add videos to the list of available videos"
     [query-maybe cb]
     (go
-      (loop [[video & vs] server-video-list
+      (loop [[video & vs] vidcat/video-catalog
              ui-video-list []
              ui-video-db {}]
-        (<! (timeout 2000))
+        (<! (timeout 500))
         (let [new-video-id (:video/id video)
               id-set (set (map :video/id @known-videos))]
           (if (contains? id-set new-video-id)

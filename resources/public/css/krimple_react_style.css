@@ -4,6 +4,8 @@ div.list-group-item {
 }
 
 div.pointlessExtraDiv {
+    height: 200;
+    overflow: scroll;
 }
 
 ul.list-group {
@@ -14,7 +16,9 @@ ul.list-group {
 
 ul.list-group li {
     list-style-type: none;
-    z-index: 1;
+    display: inline-block;
+    width: 200;
+    height: 175;
 }
 
 ul.list-group li:hover {

@@ -21,7 +21,8 @@
       (dom/div #js {:className "pointlessExtraDiv"}
         (if (and videos (pos? (count videos)))
           (dom/ul #js {:className "list-group"}
-            (map #(dom/li #js {:key (:video/id %)}
+            (map #(dom/li (clj->js {:key (:video/id %)
+                                    :display "inline-block"})
                           (mi/media-item %))
                  videos))
           (dom/span nil "Please wait..."))))))
