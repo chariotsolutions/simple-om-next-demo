@@ -1,8 +1,8 @@
 (ns user
   (:require
-   [krimple-react.shared-definitions :as shared]
-   [krimple-react.core :as core]
-   [krimple-react.media-player-app :as mpa]
+   [omnext-demo.shared-definitions :as shared]
+   [omnext-demo.core :as core]
+   [omnext-demo.media-player-app :as mpa]
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]
    ))

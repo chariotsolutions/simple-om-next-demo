@@ -1,12 +1,12 @@
-(ns krimple-react.media-player-app
+(ns omnext-demo.media-player-app
   "Main component for the application
 
   - Displays the title (from app state)
   - Contains the list of available media items
   - Contains the Media Player"
   (:require
-   [krimple-react.media-list :as ml :refer [MediaList]]
-   [krimple-react.media-player :as mp :refer [MediaPlayer]]
+   [omnext-demo.media-list :as ml :refer [MediaList]]
+   [omnext-demo.media-player :as mp :refer [MediaPlayer]]
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]))
 

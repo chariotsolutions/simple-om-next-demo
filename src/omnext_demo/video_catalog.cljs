@@ -1,4 +1,4 @@
-(ns krimple-react.video-catalog)
+(ns omnext-demo.video-catalog)
 
 (def chariot-solutions
   {:video/user_id               10064545

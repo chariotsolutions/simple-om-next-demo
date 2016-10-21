@@ -1,4 +1,4 @@
-(ns krimple-react.media-player
+(ns omnext-demo.media-player
   "Component hosting the Vimeo media player.
 
   After the component is \"mounted\", it creates an instance of the
@@ -37,9 +37,9 @@
 (defn player-requirements-ok?
   "Are the things we need for a Vimeo Player available?
 
-     - A player location
-     - A selected video
-     - A selected video that isn't 'NO VIDEO' :-) "
+   - A player location
+   - A selected video
+   - A selected video that isn't 'NO VIDEO' :-) "
   [this]
   (let [{:keys [player-element-id selected-video] :as props} (om/props this)]
     (and player-element-id

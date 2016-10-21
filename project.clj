@@ -1,8 +1,8 @@
-(defproject krimple-react "0.2.1-SNAPSHOT"
+(defproject omnext-demo "0.2.1-SNAPSHOT"
   :description "Minimal Om.Next/React demo program"
   :url "https://github.com/chariotsolutions/simple-om-next-demo"
   :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+            :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
   :min-lein-version "2.7.1"
   
@@ -36,37 +36,40 @@
   
   :source-paths ["src"]
 
+  :margauto {:src-dirs ["src" "dev" "test"]
+             :port     3000}
+
   :cljsbuild {
-              :builds [{:id "devcards"
+              :builds [{:id           "devcards"
                         :source-paths ["src"]
-                        :figwheel { :devcards true  ;; <- note this
-                                   ;; :open-urls will pop open your application
-                                   ;; in the default browser once Figwheel has
-                                   ;; started and complied your application.
-                                   ;; Comment this out once it no longer serves you.
-                                   :open-urls ["http://localhost:3449/cards.html"]}
-                        :compiler { :main       "krimple-react.core"
-                                    :asset-path "js/compiled/devcards_out"
-                                    :externs ["vimeo-externs.js"]
-                                    :output-to  "resources/public/js/compiled/krimple_react_devcards.js"
-                                    :output-dir "resources/public/js/compiled/devcards_out"
-                                    :source-map-timestamp true }}
-                       {:id "dev"
+                        :figwheel     { :devcards true ;; <- note this
+                                       ;; :open-urls will pop open your application
+                                       ;; in the default browser once Figwheel has
+                                       ;; started and complied your application.
+                                       ;; Comment this out once it no longer serves you.
+                                       :open-urls ["http://localhost:3449/cards.html"]}
+                        :compiler     { :main                "omnext-demo.core"
+                                       :asset-path           "js/compiled/devcards_out"
+                                       :externs              ["vimeo-externs.js"]
+                                       :output-to            "resources/public/js/compiled/omnext_demo_devcards.js"
+                                       :output-dir           "resources/public/js/compiled/devcards_out"
+                                       :source-map-timestamp true }}
+                       {:id           "dev"
                         :source-paths ["src"]
-                        :figwheel true
-                        :compiler {:main       "krimple-react.core"
-                                   :asset-path "js/compiled/out"
-                                   :externs ["vimeo-externs.js"]
-                                   :output-to  "resources/public/js/compiled/krimple_react.js"
-                                   :output-dir "resources/public/js/compiled/out"
-                                   :source-map-timestamp true }}
-                       {:id "prod"
+                        :figwheel     true
+                        :compiler     {:main                 "omnext-demo.core"
+                                       :asset-path           "js/compiled/out"
+                                       :externs              ["vimeo-externs.js"]
+                                       :output-to            "resources/public/js/compiled/omnext_demo.js"
+                                       :output-dir           "resources/public/js/compiled/out"
+                                       :source-map-timestamp true }}
+                       {:id           "prod"
                         :source-paths ["src"]
-                        :compiler {:main       "krimple-react.core"
-                                   :asset-path "js/compiled/out"
-                                   :externs ["vimeo-externs.js"]
-                                   :output-to  "resources/public/js/compiled/krimple_react.js"
-                                   :optimizations :advanced}}]}
+                        :compiler     {:main          "omnext-demo.core"
+                                       :asset-path    "js/compiled/out"
+                                       :externs       ["vimeo-externs.js"]
+                                       :output-to     "resources/public/js/compiled/omnext_demo.js"
+                                       :optimizations :advanced}}]}
 
   :figwheel { :css-dirs ["resources/public/css"] }
 
@@ -78,5 +81,5 @@
                    ;; for CIDER
                    ;; :plugins [[cider/cider-nrepl "0.12.0"]]
                    :repl-options {; for nREPL dev you really need to limit output
-                                  :init (set! *print-length* 50)
+                                  :init             (set! *print-length* 50)
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})

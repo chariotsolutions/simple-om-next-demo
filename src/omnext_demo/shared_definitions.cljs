@@ -1,8 +1,8 @@
-(ns krimple-react.shared-definitions
+(ns omnext-demo.shared-definitions
   (:require
    [cljs.core.async :refer [<! >! put! chan timeout]]
    [clojure.spec :as s]
-   [krimple-react.video-catalog :as vidcat]
+   [omnext-demo.video-catalog :as vidcat]
    [om.next :as om :refer-macros [defui]])
   (:require-macros
    [cljs.core.async.macros :refer [go go-loop]]))

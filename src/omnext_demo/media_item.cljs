@@ -1,4 +1,4 @@
-(ns krimple-react.media-item
+(ns omnext-demo.media-item
   "Display an individual media item from Vimeo
 
   Given properties `:video/id`, `:video/title`, and `:video/description`,

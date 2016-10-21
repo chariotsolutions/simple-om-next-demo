@@ -22,9 +22,6 @@ ul.list-group li {
 }
 
 ul.list-group li:hover {
-    z-index: 3;
-    background-color: gold;
-    border: thick black ridge;
     
 }
 
