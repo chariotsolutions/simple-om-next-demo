@@ -1,4 +1,4 @@
-(defproject omnext-demo "0.2.1"
+(defproject omnext-demo "0.3.0-SNAPSHOT"
   :description "Minimal Om.Next/React demo program"
   :url "https://github.com/chariotsolutions/simple-om-next-demo"
   :license {:name "Eclipse Public License"
